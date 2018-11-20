@@ -25,48 +25,52 @@
 #pragma mark - Method Resolution
 
 /// override resolveInstanceMethod or resolveClassMethod for changing sendMessage method implementation
-+ (BOOL)resolveInstanceMethod:(SEL)sel {
-    if (sel == @selector(sendMessage:)) {
-        class_addMethod([self class], sel, imp_implementationWithBlock(^(id self, NSString *word) {
-            NSLog(@"method resolution way : send message = %@", word);
-        }), "v@*");
-        
-        return YES;
-    }
-    
-    return [super resolveInstanceMethod:sel];
-}
+//+ (BOOL)resolveInstanceMethod:(SEL)sel {
+//    if (sel == @selector(sendMessage:)) {
+//        class_addMethod([self class], sel, imp_implementationWithBlock(^(id self, NSString *word) {
+//            NSLog(@"method resolution way : send message = %@", word);
+//        }), "v@*");
+//
+//        return YES;
+//    }
+//
+//    return [super resolveInstanceMethod:sel];
+//}
 
 
 #pragma mark - Fast Forwarding
 
-- (id)forwardingTargetForSelector:(SEL)aSelector {
-    if (aSelector == @selector(sendMessage:)) {
-        return [MessageForwarding new];
-    }
-    
-    return nil;
-}
+//- (id)forwardingTargetForSelector:(SEL)aSelector {
+//    if (aSelector == @selector(sendMessage:)) {
+//        return [MessageForwarding new];
+//    }
+//
+//    return nil;
+//}
 
 
 #pragma mark - Normal Forwarding
 
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
-    NSMethodSignature *methodSignature = [super methodSignatureForSelector:aSelector];
-    
-    if (!methodSignature) {
-        methodSignature = [NSMethodSignature signatureWithObjCTypes:"v@:*"];
-    }
-    
-    return methodSignature;
-}
-
-- (void)forwardInvocation:(NSInvocation *)anInvocation {
-    MessageForwarding *messageForwarding = [MessageForwarding new];
-    
-    if ([messageForwarding respondsToSelector:anInvocation.selector]) {
-        [anInvocation invokeWithTarget:messageForwarding];
-    }
-}
+//- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
+//    NSMethodSignature *methodSignature = [super methodSignatureForSelector:aSelector];
+//
+//    if (!methodSignature) {
+//        methodSignature = [NSMethodSignature signatureWithObjCTypes:"v@:*"];
+//    }
+//
+//    return methodSignature;
+//}
+//
+//- (void)forwardInvocation:(NSInvocation *)anInvocation {
+//    /// 1.
+//    // 这方法里啥也不干，也不会引发“unrecognized selector sent to instance”崩溃
+//    
+//    /// 2.
+////    MessageForwarding *messageForwarding = [MessageForwarding new];
+////
+////    if ([messageForwarding respondsToSelector:anInvocation.selector]) {
+////        [anInvocation invokeWithTarget:messageForwarding];
+////    }
+//}
 
 @end

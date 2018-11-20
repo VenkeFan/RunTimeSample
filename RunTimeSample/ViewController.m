@@ -46,16 +46,16 @@ typedef void(^blk_t)(void);
 //    BOOL b2 = [son isMemberOfClass:[Father class]]; // NO   一个对象是否是某个类的实例
 //    
 //    /// 方法解析与消息转发
-//    Message *msg = [Message new];
-//    [msg sendMessage:@"hello world"];
-//    
+    Message *msg = [Message new];
+    [msg sendMessage:@"hello world"];
+//
 //    /// Associated Objects
 //    NSObject *obj = [NSObject new];
 //    obj.associatedObject = son;
 //    NSLog(@"NSObject associatedObject = %@", ((Son *)obj.associatedObject).name);
 
  
-    runtimeTest2();
+//    runtimeTest2();
     
 //    getObjectMembers();
 }
