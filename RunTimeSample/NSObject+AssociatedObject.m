@@ -9,70 +9,33 @@
 #import "NSObject+AssociatedObject.h"
 #import <objc/runtime.h>
 
-BOOL swizzleInstanceMethod(Class cls, SEL originalSel, SEL swizzledSel) {
-    Method originalMethod = class_getInstanceMethod(cls, originalSel);
-    Method swizzledMethod = class_getInstanceMethod(cls, swizzledSel);
-    if (!originalMethod || !swizzledMethod) {
-        return NO;
-    }
-    
-    BOOL didAdded = class_addMethod(cls,
-                                    originalSel,
-                                    method_getImplementation(swizzledMethod),
-                                    method_getTypeEncoding(swizzledMethod));
-    if (didAdded) {
-        class_replaceMethod(cls,
-                            swizzledSel,
-                            method_getImplementation(originalMethod),
-                            method_getTypeEncoding(originalMethod));
-    } else {
-        method_exchangeImplementations(originalMethod, swizzledMethod);
-    }
-    
-    return YES;
-}
-
-BOOL swizzleClassMethod(Class cls, SEL originalSel, SEL swizzledSel) {
-    Method originalMethod = class_getClassMethod(cls, originalSel);
-    Method swizzledMethod = class_getClassMethod(cls, swizzledSel);
-    if (!originalMethod || !swizzledMethod) {
-        return NO;
-    }
-    
-    BOOL didAdded = class_addMethod(objc_getMetaClass([NSStringFromClass(cls) UTF8String]),
-                                    originalSel,
-                                    method_getImplementation(swizzledMethod),
-                                    method_getTypeEncoding(swizzledMethod));
-    if (didAdded) {
-        class_replaceMethod(objc_getMetaClass([NSStringFromClass(cls) UTF8String]),
-                            swizzledSel,
-                            method_getImplementation(originalMethod),
-                            method_getTypeEncoding(originalMethod));
-    } else {
-        method_exchangeImplementations(originalMethod, swizzledMethod);
-    }
-    
-    return YES;
-}
-
 @implementation NSObject (AssociatedObject)
 
-+ (void)load {
-//    swizzleClassMethod([NSObject class],
-//                       @selector(resolveInstanceMethod:),
-//                       @selector(swizzle_resolveInstanceMethod:));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored"-Wobjc-protocol-method-implementation"
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    NSString *methodName = NSStringFromSelector(aSelector);
+    if ([NSStringFromClass([self class]) hasPrefix:@"_"]
+        || [self isKindOfClass:NSClassFromString(@"UITextInputController")]
+        || [NSStringFromClass([self class]) hasPrefix:@"UIKeyboard"]
+        || [methodName isEqualToString:@"dealloc"]) {
+        
+        return nil;
+    }
     
-//    swizzleInstanceMethod([self class],
-//                          @selector(forwardingTargetForSelector:),
-//                          @selector(swizzle_forwardingTargetForSelector:));
-    
-    swizzleInstanceMethod([self class],
-                          @selector(methodSignatureForSelector:),
-                          @selector(swizzle_methodSignatureForSelector:));
-    swizzleInstanceMethod([self class],
-                          @selector(forwardInvocation:),
-                          @selector(swizzle_forwardInvocation:));
+    if (![self respondsToSelector:aSelector]) {
+        Class WLGuard = objc_allocateClassPair([NSObject class], "WLGuard", 0);
+        
+        NSString *msg = [NSString stringWithFormat:@"[%@ %p %@]: unrecognized selector sent to instance", NSStringFromClass([self class]), self, NSStringFromSelector(aSelector)];
+        class_addMethod(WLGuard, aSelector, imp_implementationWithBlock(^(id self) {
+            NSLog(@"%@", msg);
+        }), "v@*");
+        
+        return [WLGuard new];
+    }
+    return nil;
 }
+#pragma clang diagnostic pop
 
 
 /**
@@ -112,23 +75,25 @@ BOOL swizzleClassMethod(Class cls, SEL originalSel, SEL swizzledSel) {
 
 
 /**
- 方法三：只捕获到了“sendMessage:”
+ 方法三：也会捕获到系统的方法
  */
-- (NSMethodSignature *)swizzle_methodSignatureForSelector:(SEL)aSelector {
-    NSLog(@"swizzle_methodSignatureForSelector: sel = %@", NSStringFromSelector(aSelector));
-    
-    NSMethodSignature *methodSignature = [self swizzle_methodSignatureForSelector:aSelector];
+//- (NSMethodSignature *)swizzle_methodSignatureForSelector:(SEL)aSelector {
+//    NSLog(@"swizzle_methodSignatureForSelector: sel = %@", NSStringFromSelector(aSelector));
+//
+//    NSMethodSignature *methodSignature = [self swizzle_methodSignatureForSelector:aSelector];
+//
+//    if (!methodSignature) {
+//        methodSignature = [NSMethodSignature signatureWithObjCTypes:"v@:*"];
+//    }
+//
+//    return methodSignature;
+//}
+//
+//- (void)swizzle_forwardInvocation:(NSInvocation *)anInvocation {
+//    NSLog(@"-----> swizzle_forwardInvocation way : %@ = %@", NSStringFromSelector(anInvocation.selector), self);
+//}
 
-    if (!methodSignature) {
-        methodSignature = [NSMethodSignature signatureWithObjCTypes:"v@:*"];
-    }
-
-    return methodSignature;
-}
-
-- (void)swizzle_forwardInvocation:(NSInvocation *)anInvocation {
-    NSLog(@"-----> swizzle_forwardInvocation way : %@ = %@", NSStringFromSelector(anInvocation.selector), self);
-}
+#pragma mark - Getter & Setter
 
 - (void)setAssociatedObject:(id)associatedObject {
     objc_setAssociatedObject(self, @selector(associatedObject), associatedObject, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
