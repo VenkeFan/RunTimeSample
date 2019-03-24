@@ -24,7 +24,7 @@
 
 #pragma mark - Method Resolution
 
-/// override resolveInstanceMethod or resolveClassMethod for changing sendMessage method implementation
+// override resolveInstanceMethod or resolveClassMethod for changing sendMessage method implementation
 //+ (BOOL)resolveInstanceMethod:(SEL)sel {
 //    if (sel == @selector(sendMessage:)) {
 //        class_addMethod([self class], sel, imp_implementationWithBlock(^(id self, NSString *word) {

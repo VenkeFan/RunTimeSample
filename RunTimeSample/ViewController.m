@@ -46,8 +46,50 @@ typedef void(^blk_t)(void);
 //    BOOL b2 = [son isMemberOfClass:[Father class]]; // NO   一个对象是否是某个类的实例
 //    
 //    /// 方法解析与消息转发
-    Message *msg = [Message new];
-    [msg sendMessage:@"hello world"];
+//    Message *msg = [Message new];
+//    [msg sendMessage:@"hello world"];
+    
+    /*
+     [__NSCFConstantString stringValue] 这种崩溃我没有捕获到
+     
+     po [@"" class]
+     __NSCFConstantString
+     
+     (lldb) po [[NSArray new] class]
+     __NSArray0
+     
+     (lldb) po [[NSArray alloc] class]
+     __NSPlaceholderArray
+     
+     (lldb) po [@[] class]
+     __NSArray0
+     
+     (lldb) po [@[@"1"] class]
+     __NSSingleObjectArrayI
+     
+     (lldb) po [@[@"1", @"2"] class]
+     __NSArrayI
+     
+     (lldb) po [[NSMutableArray new] class]
+     __NSArrayM
+     
+     (lldb) po [[NSMutableArray alloc] class]
+     __NSPlaceholderArray
+     
+     (lldb) po [[NSString new] class]
+     __NSCFConstantString
+     
+     (lldb) po [[NSString alloc] class]
+     NSPlaceholderString
+     
+     (lldb) po [[NSDictionary new] class]
+     __NSDictionary0
+     
+     (lldb) po [[NSDictionary alloc] class]
+     __NSPlaceholderDictionary
+     */
+    id str = @"123";
+    NSString *tmp = [str stringValue];
 //
 //    /// Associated Objects
 //    NSObject *obj = [NSObject new];
