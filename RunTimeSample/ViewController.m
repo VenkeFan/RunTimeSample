@@ -88,8 +88,8 @@ typedef void(^blk_t)(void);
      (lldb) po [[NSDictionary alloc] class]
      __NSPlaceholderDictionary
      */
-    id str = @"123";
-    NSString *tmp = [str stringValue];
+//    id str = @"123";
+//    NSString *tmp = [str stringValue];
 //
 //    /// Associated Objects
 //    NSObject *obj = [NSObject new];
@@ -97,7 +97,7 @@ typedef void(^blk_t)(void);
 //    NSLog(@"NSObject associatedObject = %@", ((Son *)obj.associatedObject).name);
 
  
-//    runtimeTest2();
+    runtimeTest2();
     
 //    getObjectMembers();
 }
@@ -171,12 +171,32 @@ void runtimeTest() {
     objc_disposeClassPair(People);
 }
 
-/*
-    因为编译后的类已经注册在 runtime 中，类结构体中的 objc_ivar_list 实例变量的链表 和 instance_size 实例变量的内存大小已经确定，
-    同时runtime 会调用 class_setIvarLayout 或class_setWeakIvarLayout 来处理 strong weak 引用。所以不能向存在的类中添加实例变量
- */
 void runtimeTest2() {
-    class_addIvar([People class], "_name", sizeof(NSString *), log2(sizeof(NSString *)), @encode(NSString *));
+    id peopleInstance = [[People alloc] init];
+    
+    /*
+     因为编译后的类已经注册在 runtime 中，类结构体中的 objc_ivar_list 实例变量的链表 和 instance_size 实例变量的内存大小已经确定，
+     同时runtime 会调用 class_setIvarLayout 或class_setWeakIvarLayout 来处理 strong weak 引用。所以不能向存在的类中添加实例变量
+     */
+    {
+        // add ivar will be failed
+//        class_addIvar([People class], "_gender", sizeof(NSString *), log2(sizeof(NSString *)), @encode(NSString *));
+//        Ivar genderIvar = class_getInstanceVariable([People class], "_gender");
+//        object_setIvar(peopleInstance, genderIvar, @1);
+//        const char *varName = ivar_getName(genderIvar);
+//        NSString *name = [NSString stringWithUTF8String:varName];
+//        NSLog(@"class_addIvar: %@", name);
+    }
+    
+    
+    {
+        // add method will be succeed
+        SEL s = sel_registerName("say:");
+        class_addMethod([People class], s, imp_implementationWithBlock(^(id self, SEL _cmd, id some) {
+            NSLog(@"class_addMethod: %@", some);
+        }), "v@:@");
+        ((void (*)(id, SEL, id))objc_msgSend)(peopleInstance,  s, @"大家好");
+    }
 }
 
 /// 获取类的成员
