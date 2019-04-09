@@ -10,6 +10,8 @@
 
 @implementation Son
 
+@synthesize name = _name;
+
 + (void)load {
     NSLog(@"Son load");
 }
@@ -22,10 +24,15 @@
          而参数中的对象还是self，于是从父类开始沿继承链寻找- class这个方法，最后在NSObject中找到（若无override），
          此时，[self class]和[super class]已经等价了。
          */
-        NSLog(@"%@", NSStringFromClass([self class]));
-        NSLog(@"%@", NSStringFromClass([super class]));
+        NSLog(@"%@ class", NSStringFromClass([self class]));
+        NSLog(@"%@ class", NSStringFromClass([super class]));
     }
     return self;
+}
+
+- (void)setName:(NSString *)name {
+    NSLog(@"子类的setter方法");
+    _name = @"son";
 }
 
 @end

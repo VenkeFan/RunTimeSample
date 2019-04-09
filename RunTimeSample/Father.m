@@ -14,4 +14,16 @@
     NSLog(@"Father load");
 }
 
+- (instancetype)init {
+    if (self = [super init]) {
+        self.name = @"Dad";
+    }
+    return self;
+}
+
+- (void)setName:(NSString *)name {
+    NSLog(@"父类的setter方法");
+    _name = name;
+}
+
 @end

@@ -31,12 +31,17 @@ typedef void(^blk_t)(void);
 
 @interface ViewController ()
 
+@property (nonatomic, copy) blk_t block;
+
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    Son *f = [Son new];
+    NSLog(@"%@", f.name);
     
     /// 消息发送
 //    Son *son = [Son new];
@@ -97,9 +102,11 @@ typedef void(^blk_t)(void);
 //    NSLog(@"NSObject associatedObject = %@", ((Son *)obj.associatedObject).name);
 
  
-    runtimeTest2();
+//    runtimeTest2();
     
 //    getObjectMembers();
+    
+//    testBlock();
 }
 
 int algorithm(){
@@ -223,8 +230,7 @@ void getObjectMembers() {
 }
 
 
-- (void)testBlock {
-    
+void testBlock() {
 //    __block int i = 0;
 //    NSLog(@"定义前：%p", &i);           //栈区
 //    void (^block)(void) = ^{
@@ -233,7 +239,6 @@ void getObjectMembers() {
 //    };
 //    NSLog(@"定义后：%p", &i);           //堆区
 //    block();
-    
     
     
 //    NSMutableString *a = [NSMutableString stringWithString:@"Tom"];
